@@ -2,7 +2,7 @@
 
 import { FormEvent, PointerEvent as ReactPointerEvent, useEffect, useMemo, useState } from "react";
 
-type Phase = "choose" | "difficulty" | "playing" | "won" | "lost";
+type Phase = "choose" | "difficulty" | "guide" | "playing" | "won" | "lost";
 
 type PuzzleImage = {
   id: number;
@@ -66,6 +66,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [level, setLevel] = useState<Difficulty>(LEVELS[0]);
+  const [showGuide, setShowGuide] = useState(true);
   const [pieces, setPieces] = useState<number[]>([]);
   const [placed, setPlaced] = useState<Set<number>>(new Set());
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
@@ -186,13 +187,18 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function startGame(difficulty: Difficulty) {
-    const count = difficulty.columns * difficulty.columns;
+  function chooseDifficulty(difficulty: Difficulty) {
     setLevel(difficulty);
+    setPhase("guide");
+  }
+
+  function startGame(withGuide: boolean) {
+    const count = level.columns * level.columns;
+    setShowGuide(withGuide);
     setPieces(shuffle(Array.from({ length: count }, (_, index) => index)));
     setPlaced(new Set());
     setSelectedPiece(null);
-    setTimeLeft(difficulty.seconds);
+    setTimeLeft(level.seconds);
     setPhase("playing");
   }
 
@@ -333,12 +339,53 @@ export default function Home() {
             <h1>Choose your level</h1>
             <div className="level-list">
               {LEVELS.map((difficulty, index) => (
-                <button key={difficulty.name} onClick={() => startGame(difficulty)}>
+                <button key={difficulty.name} onClick={() => chooseDifficulty(difficulty)}>
                   <span className="level-number">0{index + 1}</span>
                   <span><strong>{difficulty.name}</strong><small>{difficulty.description}</small></span>
                   <span className="level-arrow" aria-hidden="true">→</span>
                 </button>
               ))}
+            </div>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  if (phase === "guide" && selectedImage) {
+    return (
+      <main className="difficulty-page">
+        <button className="back-button" onClick={() => setPhase("difficulty")} aria-label="Back to difficulty">← Back</button>
+        <div className="difficulty-layout">
+          <figure className="chosen-picture">
+            <img src={selectedImage.url} alt={selectedImage.title} />
+            <figcaption>
+              <span>{level.name} · {level.columns * level.columns} pieces</span>
+              <a href={selectedImage.pageUrl} target="_blank" rel="noreferrer">{imageCredit}</a>
+            </figcaption>
+          </figure>
+          <section className="level-picker guide-picker">
+            <p className="eyebrow">One more choice</p>
+            <h1>Show a picture guide?</h1>
+            <div className="guide-options">
+              <button onClick={() => startGame(true)}>
+                <span
+                  className="guide-preview guide-preview-on"
+                  style={{ backgroundImage: `linear-gradient(rgba(255,255,255,.72), rgba(255,255,255,.72)), url("${selectedImage.url}")` }}
+                  aria-hidden="true"
+                >
+                  {Array.from({ length: 9 }, (_, index) => <i key={index} />)}
+                </span>
+                <span><strong>Show guide</strong><small>See a faint picture behind the pieces.</small></span>
+                <span className="level-arrow" aria-hidden="true">→</span>
+              </button>
+              <button onClick={() => startGame(false)}>
+                <span className="guide-preview guide-preview-off" aria-hidden="true">
+                  {Array.from({ length: 9 }, (_, index) => <i key={index} />)}
+                </span>
+                <span><strong>No guide</strong><small>Build on a blank board for a bigger challenge.</small></span>
+                <span className="level-arrow" aria-hidden="true">→</span>
+              </button>
             </div>
           </section>
         </div>
@@ -391,7 +438,10 @@ export default function Home() {
 
           <div className="board-wrap">
             <div className="board-label"><span>BUILD IT HERE</span><small>{selectedPiece === null ? "Drop a piece on the right spot" : "Now pick its spot"}</small></div>
-            <div className="puzzle-board" style={{ backgroundImage: `linear-gradient(rgba(255,255,255,.84), rgba(255,255,255,.84)), url("${selectedImage.url}")` }}>
+            <div
+              className={`puzzle-board ${showGuide ? "board-with-guide" : "board-without-guide"}`}
+              style={showGuide ? { backgroundImage: `linear-gradient(rgba(255,255,255,.84), rgba(255,255,255,.84)), url("${selectedImage.url}")` } : undefined}
+            >
               {Array.from({ length: totalPieces }, (_, cell) => (
                 <button
                   className={`board-cell ${placed.has(cell) ? "cell-filled" : ""}`}
@@ -421,7 +471,7 @@ export default function Home() {
               <h1 id="result-title">{phase === "won" ? "Congratulations!" : "Please try again."}</h1>
               <p>{phase === "won" ? `You finished the ${level.name.toLowerCase()} puzzle with ${formatTime(timeLeft)} left.` : "You’ve got this — give the same puzzle another go."}</p>
               <div className="result-actions">
-                <button className="primary-action" onClick={() => startGame(level)}>{phase === "won" ? "Play again" : "Try again"}</button>
+                <button className="primary-action" onClick={() => startGame(showGuide)}>{phase === "won" ? "Play again" : "Try again"}</button>
                 <button className="secondary-action" onClick={() => setPhase("difficulty")}>Change level</button>
               </div>
               <button className="text-action" onClick={resetToSearch}>Choose a new picture</button>

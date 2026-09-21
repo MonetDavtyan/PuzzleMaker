@@ -234,6 +234,47 @@ h1, h2, p { margin-top: 0; }
 .level-arrow { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: var(--soft); font-size: 20px; }
 .level-list button:hover .level-arrow { background: var(--violet); color: white; }
 
+.guide-picker h1 { margin-bottom: 22px; }
+.guide-options { display: grid; gap: 10px; }
+.guide-options > button {
+  width: 100%;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 78px 1fr auto;
+  align-items: center;
+  gap: 15px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .7);
+  text-align: left;
+  cursor: pointer;
+  transition: transform .18s, border-color .18s, box-shadow .18s;
+}
+.guide-options > button:hover, .guide-options > button:focus-visible {
+  border-color: var(--violet);
+  outline: 0;
+  transform: translateY(-2px);
+  box-shadow: 0 9px 24px rgba(42, 33, 20, .1);
+}
+.guide-options strong { display: block; margin-bottom: 4px; font-size: 18px; }
+.guide-options small { display: block; color: #77736b; font-size: 12px; line-height: 1.35; }
+.guide-options > button:hover .level-arrow, .guide-options > button:focus-visible .level-arrow { background: var(--violet); color: white; }
+.guide-preview {
+  width: 78px;
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  overflow: hidden;
+  border: 4px solid white;
+  border-radius: 10px;
+  background-color: #f3f1ea;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 4px 12px rgba(31, 25, 17, .14);
+}
+.guide-preview i { border: 1px solid rgba(50, 42, 30, .17); }
+.guide-preview-off { background: #f3f1ea; }
+
 .game-page { height: 100vh; min-height: 620px; overflow: hidden; background: #f8f6f0; }
 .game-bar {
   height: 76px;
@@ -319,6 +360,7 @@ h1, h2, p { margin-top: 0; }
   background-position: center;
   box-shadow: 0 18px 45px rgba(37, 31, 20, .14);
 }
+.board-without-guide { background-image: none; }
 .board-cell {
   min-width: 0;
   min-height: 0;
